@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { logger } from '@/lib/logger';
 
 const createClientSchema = z.object({
   codiceFiscale: z.string().min(16).max(16).toUpperCase(),
@@ -96,6 +97,8 @@ export async function POST(req: Request) {
       entityId: client.id,
     },
   });
+
+  logger.info({ clientId: client.id, agentId: session.user.id }, 'client created');
 
   return NextResponse.json(client, { status: 201 });
 }
