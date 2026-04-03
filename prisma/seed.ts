@@ -1,7 +1,24 @@
-import { PrismaClient, Role, PolicyCategory, PolicyStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
+
+const roles = {
+  admin: 'ADMIN',
+  agent: 'AGENT',
+} as const;
+
+const policyCategories = {
+  auto: 'AUTO',
+  casa: 'CASA',
+  vita: 'VITA',
+  salute: 'SALUTE',
+} as const;
+
+const policyStatuses = {
+  active: 'ACTIVE',
+  expiring: 'EXPIRING',
+} as const;
 
 async function main() {
   console.log('🌱 Seeding database...');
@@ -14,7 +31,7 @@ async function main() {
     create: {
       email: 'admin@assistudiovigevano.it',
       name: 'Admin Vigevano',
-      role: Role.ADMIN,
+      role: roles.admin,
       passwordHash: adminHash,
     },
   });
@@ -27,7 +44,7 @@ async function main() {
     create: {
       email: 'marco.rossi@assistudiovigevano.it',
       name: 'Marco Rossi',
-      role: Role.AGENT,
+      role: roles.agent,
       passwordHash: agentHash,
     },
   });
@@ -38,7 +55,7 @@ async function main() {
     create: {
       email: 'giulia.ferrari@assistudiovigevano.it',
       name: 'Giulia Ferrari',
-      role: Role.AGENT,
+      role: roles.agent,
       passwordHash: agentHash,
     },
   });
@@ -105,11 +122,11 @@ async function main() {
     create: {
       policyNumber: 'AXA-2024-001234',
       insuranceCompany: 'AXA Assicurazioni',
-      category: PolicyCategory.AUTO,
+      category: policyCategories.auto,
       premiumCents: 89500,
       startDate: oneYearAgo,
       renewalDate: in25Days, // expiring soon!
-      status: PolicyStatus.EXPIRING,
+      status: policyStatuses.expiring,
       clientId: client1.id,
     },
   });
@@ -120,11 +137,11 @@ async function main() {
     create: {
       policyNumber: 'GEN-2024-005678',
       insuranceCompany: 'Generali Italia',
-      category: PolicyCategory.CASA,
+      category: policyCategories.casa,
       premiumCents: 45000,
       startDate: oneYearAgo,
       renewalDate: in90Days,
-      status: PolicyStatus.ACTIVE,
+      status: policyStatuses.active,
       clientId: client1.id,
     },
   });
@@ -135,11 +152,11 @@ async function main() {
     create: {
       policyNumber: 'UNI-2024-009012',
       insuranceCompany: 'UnipolSai',
-      category: PolicyCategory.VITA,
+      category: policyCategories.vita,
       premiumCents: 120000,
       startDate: oneYearAgo,
       renewalDate: in365Days,
-      status: PolicyStatus.ACTIVE,
+      status: policyStatuses.active,
       clientId: client2.id,
     },
   });
@@ -150,11 +167,11 @@ async function main() {
     create: {
       policyNumber: 'ALZ-2024-003456',
       insuranceCompany: 'Allianz',
-      category: PolicyCategory.SALUTE,
+      category: policyCategories.salute,
       premiumCents: 67800,
       startDate: oneYearAgo,
       renewalDate: in25Days, // expiring soon!
-      status: PolicyStatus.EXPIRING,
+      status: policyStatuses.expiring,
       clientId: client2.id,
     },
   });
@@ -165,11 +182,11 @@ async function main() {
     create: {
       policyNumber: 'INT-2024-007890',
       insuranceCompany: 'Intesa Vita',
-      category: PolicyCategory.AUTO,
+      category: policyCategories.auto,
       premiumCents: 75000,
       startDate: oneYearAgo,
       renewalDate: in90Days,
-      status: PolicyStatus.ACTIVE,
+      status: policyStatuses.active,
       clientId: client3.id,
     },
   });

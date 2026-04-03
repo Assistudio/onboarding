@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { formatDate, formatCurrency, daysUntilRenewal, policyCategoryLabel, policyStatusLabel } from '@/lib/utils';
-import { PolicyStatus } from '@prisma/client';
+import { type PolicyStatus } from '@/lib/prisma-enums';
 import { FileText, MessageSquare, Clock, Plus } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';

@@ -2,25 +2,32 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PolicyStatus } from '@prisma/client';
+import { policyStatuses } from '@/lib/prisma-enums';
+
+type RouteContext = {
+  params: Promise<{
+    id: string;
+  }>;
+};
 
 const updatePolicySchema = z.object({
   insuranceCompany: z.string().min(1).optional(),
   premiumCents: z.number().int().positive().optional(),
   startDate: z.string().datetime().optional(),
   renewalDate: z.string().datetime().optional(),
-  status: z.nativeEnum(PolicyStatus).optional(),
+  status: z.enum(policyStatuses).optional(),
   notes: z.string().optional(),
 });
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: RouteContext) {
   const session = await auth();
   if (!session?.user || session.user.role === 'CLIENT') {
     return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
   }
 
+  const { id } = await params;
   const policy = await prisma.policy.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       client: { select: { id: true, firstName: true, lastName: true } },
       documents: { where: { deletedAt: null } },
@@ -34,13 +41,14 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   return NextResponse.json(policy);
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: RouteContext) {
   const session = await auth();
   if (!session?.user || session.user.role === 'CLIENT') {
     return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
   }
 
-  const policy = await prisma.policy.findUnique({ where: { id: params.id } });
+  const { id } = await params;
+  const policy = await prisma.policy.findUnique({ where: { id } });
   if (!policy) {
     return NextResponse.json({ error: 'Polizza non trovata' }, { status: 404 });
   }
@@ -56,7 +64,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 
   const updated = await prisma.policy.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       ...parsed.data,
       ...(parsed.data.startDate ? { startDate: new Date(parsed.data.startDate) } : {}),

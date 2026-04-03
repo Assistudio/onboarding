@@ -2,13 +2,19 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { ContactRequestStatus } from '@prisma/client';
+import { contactRequestStatuses } from '@/lib/prisma-enums';
+
+type RouteContext = {
+  params: Promise<{
+    id: string;
+  }>;
+};
 
 const updateRequestSchema = z.object({
-  status: z.nativeEnum(ContactRequestStatus),
+  status: z.enum(contactRequestStatuses),
 });
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: RouteContext) {
   const session = await auth();
   if (!session?.user || session.user.role === 'CLIENT') {
     return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 });
@@ -20,8 +26,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: 'Dati non validi' }, { status: 400 });
   }
 
+  const { id } = await params;
   const request = await prisma.contactRequest.update({
-    where: { id: params.id },
+    where: { id },
     data: { status: parsed.data.status },
   });
 

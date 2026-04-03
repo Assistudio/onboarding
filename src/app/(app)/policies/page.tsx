@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { formatDate, formatCurrency, daysUntilRenewal, policyCategoryLabel, policyStatusLabel } from '@/lib/utils';
-import { PolicyStatus, PolicyCategory } from '@prisma/client';
+import { type PolicyCategory, type PolicyStatus, policyCategories, policyStatuses } from '@/lib/prisma-enums';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,13 +65,13 @@ export default async function PoliciesPage({ searchParams }: Props) {
       <form className="flex flex-wrap gap-3">
         <select name="status" defaultValue={searchParams.status ?? ''} className="input w-auto">
           <option value="">Tutti gli stati</option>
-          {(['ACTIVE', 'EXPIRING', 'RENEWED', 'CANCELLED'] as PolicyStatus[]).map((s) => (
+          {policyStatuses.map((s) => (
             <option key={s} value={s}>{policyStatusLabel(s)}</option>
           ))}
         </select>
         <select name="category" defaultValue={searchParams.category ?? ''} className="input w-auto">
           <option value="">Tutte le categorie</option>
-          {(Object.values(PolicyCategory)).map((c) => (
+          {policyCategories.map((c) => (
             <option key={c} value={c}>{policyCategoryLabel(c)}</option>
           ))}
         </select>

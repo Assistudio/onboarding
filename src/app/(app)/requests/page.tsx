@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { formatDate, contactRequestStatusLabel } from '@/lib/utils';
-import { ContactRequestStatus } from '@prisma/client';
+import { type ContactRequestStatus } from '@/lib/prisma-enums';
 
 export const dynamic = 'force-dynamic';
 

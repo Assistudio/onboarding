@@ -2,39 +2,47 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PolicyCategory } from '@prisma/client';
+import { policyCategories } from '@/lib/prisma-enums';
+
+type RouteContext = {
+  params: Promise<{
+    id: string;
+  }>;
+};
 
 const createPolicySchema = z.object({
   policyNumber: z.string().min(1),
   insuranceCompany: z.string().min(1),
-  category: z.nativeEnum(PolicyCategory),
+  category: z.enum(policyCategories),
   premiumCents: z.number().int().positive(),
   startDate: z.string().datetime(),
   renewalDate: z.string().datetime(),
   notes: z.string().optional(),
 });
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: RouteContext) {
   const session = await auth();
   if (!session?.user || session.user.role === 'CLIENT') {
     return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
   }
 
+  const { id } = await params;
   const policies = await prisma.policy.findMany({
-    where: { clientId: params.id },
+    where: { clientId: id },
     orderBy: { renewalDate: 'asc' },
   });
 
   return NextResponse.json(policies);
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: RouteContext) {
   const session = await auth();
   if (!session?.user || session.user.role === 'CLIENT') {
     return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
   }
 
-  const client = await prisma.client.findUnique({ where: { id: params.id } });
+  const { id } = await params;
+  const client = await prisma.client.findUnique({ where: { id } });
   if (!client) {
     return NextResponse.json({ error: 'Cliente non trovato' }, { status: 404 });
   }
@@ -50,7 +58,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       ...parsed.data,
       startDate: new Date(parsed.data.startDate),
       renewalDate: new Date(parsed.data.renewalDate),
-      clientId: params.id,
+      clientId: id,
     },
   });
 
@@ -60,7 +68,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       action: 'CREATE',
       entityType: 'Policy',
       entityId: policy.id,
-      meta: { clientId: params.id },
+      meta: { clientId: id },
     },
   });
 

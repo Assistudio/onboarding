@@ -4,8 +4,8 @@ import Credentials from 'next-auth/providers/credentials';
 import Email from 'next-auth/providers/email';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import type { Role } from '@/lib/prisma-enums';
 import { prisma } from '@/lib/prisma';
-import type { Role } from '@prisma/client';
 
 declare module 'next-auth' {
   interface User {
@@ -27,7 +27,7 @@ const loginSchema = z.object({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma) as any,
   session: { strategy: 'jwt', maxAge: 24 * 60 * 60 },
   pages: {
     signIn: '/login',

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -12,14 +13,21 @@ const updateClientSchema = z.object({
   notes: z.string().optional(),
 });
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+type RouteContext = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export async function GET(req: NextRequest, { params }: RouteContext) {
   const session = await auth();
   if (!session?.user || session.user.role === 'CLIENT') {
     return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
   }
 
+  const { id } = await params;
   const client = await prisma.client.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       agents: { include: { agent: { select: { id: true, name: true, email: true } } } },
       policies: { orderBy: { renewalDate: 'asc' } },
@@ -35,13 +43,14 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   return NextResponse.json(client);
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: RouteContext) {
   const session = await auth();
   if (!session?.user || session.user.role === 'CLIENT') {
     return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
   }
 
   const body = await req.json();
+  const { id } = await params;
 
   // Handle archive/unarchive
   if ('archived' in body) {
@@ -49,7 +58,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       return NextResponse.json({ error: 'Solo gli admin possono archiviare' }, { status: 403 });
     }
     const client = await prisma.client.update({
-      where: { id: params.id },
+      where: { id },
       data: { archivedAt: body.archived ? new Date() : null },
     });
     return NextResponse.json(client);
@@ -61,7 +70,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 
   const client = await prisma.client.update({
-    where: { id: params.id },
+    where: { id },
     data: { ...parsed.data, email: parsed.data.email || null },
   });
 

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { formatDate, contactRequestStatusLabel } from '@/lib/utils';
-import { ContactRequestStatus } from '@prisma/client';
+import { type ContactRequestStatus } from '@/lib/prisma-enums';
 import { Plus, MessageSquare } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';

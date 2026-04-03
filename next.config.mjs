@@ -1,8 +1,10 @@
 import { withSentryConfig } from '@sentry/nextjs';
+import path from 'node:path';
 
 const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs', 'pino', 'pino-pretty'],
+  serverExternalPackages: ['@prisma/client', 'bcryptjs', 'pino', 'pino-pretty'],
+  turbopack: {
+    root: path.resolve('.'),
   },
   images: {
     remotePatterns: [
@@ -29,8 +31,5 @@ export default withSentryConfig(nextConfig, {
   widenClientFileUpload: true,
 
   // Automatically tree-shake Sentry logger statements to reduce bundle size
-  disableLogger: true,
-
-  // Enables automatic instrumentation of Vercel Cron Monitors.
-  automaticVercelMonitors: true,
+  // disableLogger / automaticVercelMonitors are deprecated in this Sentry integration.
 });

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { supabaseAdmin, STORAGE_BUCKET } from '@/lib/supabase';
-import { DocumentType } from '@prisma/client';
+import { documentTypes, type DocumentType } from '@/lib/prisma-enums';
 
 const MAX_SIZE = 20 * 1024 * 1024; // 20 MB
 const ALLOWED_TYPES = [
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   const file = formData.get('file') as File | null;
   const clientId = formData.get('clientId') as string | null;
   const policyId = formData.get('policyId') as string | null;
-  const docType = (formData.get('docType') as DocumentType) ?? 'ALTRO';
+  const docType = ((formData.get('docType') as string | null) ?? 'ALTRO') as DocumentType;
 
   if (!file) {
     return NextResponse.json({ error: 'File mancante' }, { status: 400 });
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
       fileUrl: urlData.publicUrl,
       fileSize: file.size,
       mimeType: file.type,
-      docType: docType in DocumentType ? docType : 'ALTRO',
+      docType: documentTypes.includes(docType) ? docType : 'ALTRO',
       uploadedById: session.user.id,
       clientId: clientId ?? undefined,
       policyId: policyId ?? undefined,

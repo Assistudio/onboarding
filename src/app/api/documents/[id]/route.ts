@@ -2,14 +2,21 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+type RouteContext = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export async function GET(req: Request, { params }: RouteContext) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
   }
 
+  const { id } = await params;
   const document = await prisma.document.findUnique({
-    where: { id: params.id, deletedAt: null },
+    where: { id, deletedAt: null },
   });
 
   if (!document) {
@@ -29,14 +36,15 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   return NextResponse.json({ url: document.fileUrl, document });
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: RouteContext) {
   const session = await auth();
   if (!session?.user || session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Solo admin possono eliminare documenti' }, { status: 403 });
   }
 
+  const { id } = await params;
   const document = await prisma.document.update({
-    where: { id: params.id },
+    where: { id },
     data: { deletedAt: new Date() },
   });
 
