@@ -3,6 +3,7 @@ import type { NextAuthConfig } from 'next-auth';
 // Edge-safe auth config: no Prisma, no bcrypt, no Node.js-only modules.
 // Used by proxy.ts (middleware) which runs in the Edge Runtime.
 export const authConfig = {
+  trustHost: true,
   pages: {
     signIn: '/login',
     error: '/login',

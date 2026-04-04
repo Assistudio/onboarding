@@ -27,6 +27,9 @@ const loginSchema = z.object({
   password: z.string().min(8),
 });
 
+const resendApiKey = process.env.RESEND_API_KEY;
+const magicLinkEnabled = Boolean(resendApiKey && resendApiKey !== 're_...' && !resendApiKey.includes('['));
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma) as any,
@@ -55,17 +58,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return { id: user.id, email: user.email, name: user.name, role: user.role as Role };
       },
     }),
-    // Magic-link for CLIENT users
-    Email({
-      server: {
-        host: 'smtp.resend.com',
-        port: 465,
-        auth: {
-          user: 'resend',
-          pass: process.env.RESEND_API_KEY,
-        },
-      },
-      from: process.env.EMAIL_FROM ?? 'noreply@assistudiovigevano.it',
-    }),
+    ...(magicLinkEnabled
+      ? [
+          // Magic-link for CLIENT users
+          Email({
+            server: {
+              host: 'smtp.resend.com',
+              port: 465,
+              auth: {
+                user: 'resend',
+                pass: resendApiKey,
+              },
+            },
+            from: process.env.EMAIL_FROM ?? 'noreply@assistudiovigevano.it',
+          }),
+        ]
+      : []),
   ],
 });
