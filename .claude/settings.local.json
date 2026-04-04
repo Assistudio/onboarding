@@ -5,7 +5,10 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d['version']\\)\")",
       "Bash(ls /Users/Francesco/Downloads/onboarding/src/auth*)",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('dependencies',{}\\).get\\('next',''\\)\\)\")",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(grep -v \"^$\")",
+      "Bash(psql --version)",
+      "Bash(docker --version)"
     ]
   },
   "enableAllProjectMcpServers": true,
