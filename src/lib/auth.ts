@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import type { Role } from '@/lib/prisma-enums';
 import { prisma } from '@/lib/prisma';
+import { authConfig } from '@/auth.config';
 
 declare module 'next-auth' {
   interface User {
@@ -27,12 +28,8 @@ const loginSchema = z.object({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma) as any,
-  session: { strategy: 'jwt', maxAge: 24 * 60 * 60 },
-  pages: {
-    signIn: '/login',
-    error: '/login',
-  },
   providers: [
     // Email/password for ADMIN and AGENT
     Credentials({
@@ -71,20 +68,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       from: process.env.EMAIL_FROM ?? 'noreply@assistudiovigevano.it',
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as Role;
-      }
-      return session;
-    },
-  },
 });
