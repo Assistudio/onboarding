@@ -22,7 +22,10 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:generate:prod": "prisma generate --schema=prisma/schema.production.prisma",
+    "db:push:prod": "prisma db push --schema=prisma/schema.production.prisma",
+    "vercel-build": "prisma generate --schema=prisma/schema.production.prisma && prisma db push --schema=prisma/schema.production.prisma && next build"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.4.1",

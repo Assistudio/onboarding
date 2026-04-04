@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─── Auth (NextAuth v5) ───────────────────────────────────────────────────────
@@ -18,12 +19,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?
-  access_token      String?
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?
+  id_token          String? @db.Text
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -184,7 +185,7 @@ enum ContactRequestStatus {
 model ContactRequest {
   id            String               @id @default(cuid())
   subject       String
-  body          String
+  body          String @db.Text
   attachmentUrl String?
   status        ContactRequestStatus @default(RECEIVED)
   createdAt     DateTime             @default(now())
