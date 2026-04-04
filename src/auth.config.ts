@@ -1,5 +1,13 @@
 import type { NextAuthConfig } from 'next-auth';
 
+// In sviluppo lasciamo che Auth.js inferisca host/origin dalla request reale.
+// Questo evita mismatch tra NEXTAUTH_URL e l'host effettivo usato nel browser
+// quando il sito viene aperto via localhost, IP LAN o dominio locale diverso.
+if (process.env.NODE_ENV !== 'production') {
+  delete process.env.AUTH_URL;
+  delete process.env.NEXTAUTH_URL;
+}
+
 // Edge-safe auth config: no Prisma, no bcrypt, no Node.js-only modules.
 // Used by proxy.ts (middleware) which runs in the Edge Runtime.
 export const authConfig = {
