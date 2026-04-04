@@ -4,20 +4,39 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+function isValidSupabaseUrl(value: string | undefined): value is string {
+  if (!value) return false;
+  if (!value.startsWith('https://')) return false;
+
+  try {
+    const url = new URL(value);
+    return url.hostname.includes('.supabase.co') || url.hostname.includes('localhost');
+  } catch {
+    return false;
+  }
+}
+
 function createMissingSupabaseClient() {
   return new Proxy({} as ReturnType<typeof createClient>, {
     get() {
-      throw new Error('Configurazione Supabase mancante: verifica NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY e SUPABASE_SERVICE_ROLE_KEY.');
+      throw new Error(
+        'Configurazione Supabase mancante o non valida: verifica NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY e SUPABASE_SERVICE_ROLE_KEY.',
+      );
     },
   });
 }
 
 // Client-side (anon key)
-export const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : createMissingSupabaseClient();
+export const supabase =
+  isValidSupabaseUrl(supabaseUrl) && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : createMissingSupabaseClient();
 
 // Server-side (service role — bypasses RLS for admin operations)
 export const supabaseAdmin =
-  supabaseUrl && supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : createMissingSupabaseClient();
+  isValidSupabaseUrl(supabaseUrl) && supabaseServiceKey
+    ? createClient(supabaseUrl, supabaseServiceKey)
+    : createMissingSupabaseClient();
 
 export const STORAGE_BUCKET = 'documents';
 

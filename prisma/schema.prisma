@@ -49,17 +49,11 @@ model VerificationToken {
 
 // ─── Users & Roles ───────────────────────────────────────────────────────────
 
-enum Role {
-  ADMIN
-  AGENT
-  CLIENT
-}
-
 model User {
   id           String    @id @default(cuid())
   email        String    @unique
   name         String
-  role         Role      @default(CLIENT)
+  role         String    @default("CLIENT")
   passwordHash String?   // null for magic-link (CLIENT) users
   emailVerified DateTime?
   image        String?
@@ -109,34 +103,15 @@ model ClientAgent {
 
 // ─── Policies ────────────────────────────────────────────────────────────────
 
-enum PolicyCategory {
-  AUTO
-  CASA
-  VITA
-  SALUTE
-  INFORTUNI
-  IMPRESA
-  TUTELA_LEGALE
-  VIAGGIO
-  ALTRO
-}
-
-enum PolicyStatus {
-  ACTIVE
-  EXPIRING
-  RENEWED
-  CANCELLED
-}
-
 model Policy {
   id               String         @id @default(cuid())
   policyNumber     String         @unique
   insuranceCompany String
-  category         PolicyCategory
+  category         String
   premiumCents     Int
   startDate        DateTime
   renewalDate      DateTime
-  status           PolicyStatus   @default(ACTIVE)
+  status           String         @default("ACTIVE")
   notes            String?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
@@ -148,21 +123,13 @@ model Policy {
 
 // ─── Documents ───────────────────────────────────────────────────────────────
 
-enum DocumentType {
-  POLIZZA
-  CERTIFICATO
-  FATTURA
-  SINISTRO
-  ALTRO
-}
-
 model Document {
   id           String       @id @default(cuid())
   fileName     String
   fileUrl      String
   fileSize     Int
   mimeType     String
-  docType      DocumentType @default(ALTRO)
+  docType      String       @default("ALTRO")
   uploadedById String
   deletedAt    DateTime?
   createdAt    DateTime     @default(now())
@@ -175,18 +142,12 @@ model Document {
 
 // ─── Contact Requests ────────────────────────────────────────────────────────
 
-enum ContactRequestStatus {
-  RECEIVED
-  IN_PROGRESS
-  CLOSED
-}
-
 model ContactRequest {
   id            String               @id @default(cuid())
   subject       String
   body          String
   attachmentUrl String?
-  status        ContactRequestStatus @default(RECEIVED)
+  status        String               @default("RECEIVED")
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
 
@@ -202,7 +163,7 @@ model AuditLog {
   action     String
   entityType String
   entityId   String
-  meta       Json?
+  meta       String?
   createdAt  DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])

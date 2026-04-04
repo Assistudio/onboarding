@@ -68,7 +68,7 @@ export async function POST(req: Request, { params }: RouteContext) {
       action: 'CREATE',
       entityType: 'Policy',
       entityId: policy.id,
-      meta: { clientId: id },
+      meta: JSON.stringify({ clientId: id }),
     },
   });
 
